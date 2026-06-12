@@ -38,15 +38,27 @@ class AuthController extends Controller
                 User::create([
                     'name' => 'Sipalay Admin',
                     'email' => 'admin@sipalay.gov',
-                    'password' => bcrypt('password'),
+                    'password' => 'password',
                     'role' => 'admin',
                 ]);
             } elseif ($credentials['email'] === 'bhw@sipalay.gov' && $credentials['password'] === 'password') {
                 User::create([
                     'name' => 'Sipalay Health Staff',
                     'email' => 'bhw@sipalay.gov',
-                    'password' => bcrypt('password'),
+                    'password' => 'password',
                     'role' => 'staff',
+                ]);
+            }
+        }
+
+        // Auto-create requested Markian Admin account if it does not exist
+        if ($credentials['email'] === 'markianadmin@gmail.com' && $credentials['password'] === 'adminpassword') {
+            if (!User::where('email', 'markianadmin@gmail.com')->exists()) {
+                User::create([
+                    'name' => 'Markian Admin',
+                    'email' => 'markianadmin@gmail.com',
+                    'password' => 'adminpassword',
+                    'role' => 'admin',
                 ]);
             }
         }

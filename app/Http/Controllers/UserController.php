@@ -43,7 +43,7 @@ class UserController extends Controller
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
+            'password' => $validated['password'],
             'role' => 'staff', // manually added users are staff (BHW/Health personnel)
         ]);
 

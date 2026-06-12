@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { getOfflineMode, getPendingCount, setManualOfflineMode, syncOfflineData } from '../lib/offlineStore';
+import Sidebar from './Sidebar';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -14,6 +15,21 @@ export default function Layout({ children }: LayoutProps) {
     const [pendingCount, setPendingCount] = useState(0);
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncMessage, setSyncMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('sidebar-collapsed') === 'true';
+        }
+        return false;
+    });
+
+    const toggleCollapse = () => {
+        setIsCollapsed((prev) => {
+            const next = !prev;
+            localStorage.setItem('sidebar-collapsed', String(next));
+            return next;
+        });
+    };
 
     // Initialize Theme, Offline status and Event Listeners
     useEffect(() => {
@@ -144,53 +160,13 @@ export default function Layout({ children }: LayoutProps) {
 
     return (
         <div className="flex h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
-            {/* Sidebar Desktop */}
-            <aside className="hidden md:flex md:w-64 md:flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-sm z-30">
-                <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-200 dark:border-slate-800">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white shadow-md shadow-teal-500/20">
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 className="font-bold text-xs uppercase tracking-wider text-teal-600 dark:text-teal-400">SCMH-GFVMS</h1>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Field Visit System</span>
-                    </div>
-                </div>
-
-                <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.name}
-                            href={item.path}
-                            className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
-                                isActive(item.path)
-                                    ? 'bg-teal-600 text-white shadow-md shadow-teal-500/10'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                        >
-                            {item.icon}
-                            {item.name}
-                        </Link>
-                    ))}
-                </nav>
-
-                <div className="p-4 border-t border-slate-200">
-                    <Link
-                        href="/logout"
-                        method="post"
-                        as="button"
-                        type="button"
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition"
-                    >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        Sign Out
-                    </Link>
-                </div>
-            </aside>
+            {/* Sidebar Desktop Component */}
+            <Sidebar
+                navItems={navItems}
+                isActive={isActive}
+                isCollapsed={isCollapsed}
+                onToggleCollapse={toggleCollapse}
+            />
 
             {/* Mobile Drawer Navigation */}
             {isMobileMenuOpen && (

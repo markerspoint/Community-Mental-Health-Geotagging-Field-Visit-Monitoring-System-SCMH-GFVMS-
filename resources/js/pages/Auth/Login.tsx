@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 
 interface LoginProps {
@@ -6,6 +6,11 @@ interface LoginProps {
 }
 
 export default function Login({ isEmptyDb }: LoginProps) {
+    useEffect(() => {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    }, []);
+
     const { data, setData, post, errors, processing } = useForm({
         email: '',
         password: '',

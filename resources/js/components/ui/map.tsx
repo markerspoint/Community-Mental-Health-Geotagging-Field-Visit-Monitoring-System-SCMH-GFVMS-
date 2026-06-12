@@ -8,16 +8,22 @@ const MapContext = createContext<{ map: maplibregl.Map | null; isLoaded: boolean
 
 export const useMap = () => useContext(MapContext);
 
-interface MapProps extends React.HTMLAttributes<HTMLDivElement> {
+interface MapProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'> {
     center?: [number, number]; // [lng, lat]
     zoom?: number;
     children?: React.ReactNode;
+    onClick?: (e: maplibregl.MapMouseEvent) => void;
 }
 
-export function Map({ center = [122.4025, 9.7512], zoom = 12, children, className, ...props }: MapProps) {
+export function Map({ center = [122.4025, 9.7512], zoom = 12, children, className, onClick, ...props }: MapProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [map, setMap] = useState<maplibregl.Map | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
+
+    const onClickRef = useRef(onClick);
+    useEffect(() => {
+        onClickRef.current = onClick;
+    }, [onClick]);
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -56,6 +62,13 @@ export function Map({ center = [122.4025, 9.7512], zoom = 12, children, classNam
         // Add controls
         mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
         mapInstance.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+
+        // Bind click events
+        mapInstance.on('click', (e) => {
+            if (onClickRef.current) {
+                onClickRef.current(e);
+            }
+        });
 
         mapInstance.on('load', () => {
             setIsLoaded(true);
