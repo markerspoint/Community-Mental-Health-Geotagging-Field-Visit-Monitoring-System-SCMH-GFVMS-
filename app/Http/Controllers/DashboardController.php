@@ -40,7 +40,11 @@ class DashboardController extends Controller
             'case_category',
             'risk_alert',
             'assigned_staff_name',
-        ])->get();
+        ])
+        ->withExists(['fieldVisits as has_active_schedule' => function ($query) {
+            $query->whereIn('visit_status', ['Scheduled', 'Active']);
+        }])
+        ->get();
 
         // 3. Unique values for filter sidebar
         $barangays = Patient::distinct()->pluck('barangay')->filter()->values();

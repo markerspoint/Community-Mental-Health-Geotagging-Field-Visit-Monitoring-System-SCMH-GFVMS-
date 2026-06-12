@@ -69,6 +69,34 @@ class FieldVisitController extends Controller
     }
 
     /**
+     * Auto-schedule a visit for a patient if none is currently scheduled/active.
+     */
+    public function autoSchedule(Patient $patient)
+    {
+        // Check if there is an active/scheduled visit for this patient
+        $existingVisit = FieldVisit::where('patient_id', $patient->id)
+            ->whereIn('visit_status', ['Scheduled', 'Active'])
+            ->first();
+
+        if ($existingVisit) {
+            return redirect()->route('visits.index')->with('info', 'A visit is already scheduled or active for ' . $patient->full_name . '.');
+        }
+
+        // Otherwise, automatically create a new scheduled visit for tomorrow
+        $scheduledDate = date('Y-m-d', strtotime('+1 day'));
+        $staffName = $patient->assigned_staff_name ?: (auth()->user()->name ?: 'BHW Staff');
+
+        FieldVisit::create([
+            'patient_id' => $patient->id,
+            'scheduled_date' => $scheduledDate,
+            'staff_name' => $staffName,
+            'visit_status' => 'Scheduled',
+        ]);
+
+        return redirect()->route('visits.index')->with('success', 'A field visit has been automatically scheduled for ' . $patient->full_name . ' for tomorrow.');
+    }
+
+    /**
      * Show the active visit monitor interface (mobile-friendly check-in/out).
      */
     public function active(FieldVisit $visit)

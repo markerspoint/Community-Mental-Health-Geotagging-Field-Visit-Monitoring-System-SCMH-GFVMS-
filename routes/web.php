@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
         // Field Visit logs & Scheduling
         Route::get('visits', [FieldVisitController::class, 'index'])->name('visits.index');
         Route::post('visits', [FieldVisitController::class, 'store'])->name('visits.store');
+        Route::get('visits/auto-schedule/{patient}', [FieldVisitController::class, 'autoSchedule'])->name('visits.auto-schedule');
         Route::get('visits/{visit}/active', [FieldVisitController::class, 'active'])->name('visits.active');
         Route::post('visits/{visit}/check-in', [FieldVisitController::class, 'checkIn'])->name('visits.check-in');
         Route::post('visits/{visit}/check-out', [FieldVisitController::class, 'checkOut'])->name('visits.check-out');

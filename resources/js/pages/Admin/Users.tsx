@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import Layout from '../../components/Layout';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 
 interface User {
     id: number;
@@ -16,6 +17,14 @@ interface UsersProps {
 
 export default function Users({ users, currentUser }: UsersProps) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [deleteModalState, setDeleteModalState] = useState<{ isOpen: boolean; userId: number | null }>({
+        isOpen: false,
+        userId: null
+    });
+    const [alertModalState, setAlertModalState] = useState<{ isOpen: boolean; message: string }>({
+        isOpen: false,
+        message: ''
+    });
 
     // User creation form
     const { data, setData, post, reset, errors, processing } = useForm({
@@ -37,12 +46,22 @@ export default function Users({ users, currentUser }: UsersProps) {
 
     const handleDelete = (id: number) => {
         if (id === currentUser.id) {
-            alert('You cannot delete your own active account.');
+            setAlertModalState({
+                isOpen: true,
+                message: 'You cannot delete your own active account.'
+            });
             return;
         }
 
-        if (confirm('Are you sure you want to delete this staff user account?')) {
-            router.delete(`/users/${id}`);
+        setDeleteModalState({
+            isOpen: true,
+            userId: id
+        });
+    };
+
+    const handleConfirmDelete = () => {
+        if (deleteModalState.userId !== null) {
+            router.delete(`/users/${deleteModalState.userId}`);
         }
     };
 
@@ -213,6 +232,28 @@ export default function Users({ users, currentUser }: UsersProps) {
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={deleteModalState.isOpen}
+                onClose={() => setDeleteModalState({ isOpen: false, userId: null })}
+                onConfirm={handleConfirmDelete}
+                title="Delete Staff Account"
+                message="Are you sure you want to permanently delete this staff user account? They will lose all access to the Field Visit Monitoring System."
+                confirmText="Delete Account"
+                cancelText="Cancel"
+                type="danger"
+            />
+
+            <ConfirmationModal
+                isOpen={alertModalState.isOpen}
+                onClose={() => setAlertModalState({ isOpen: false, message: '' })}
+                onConfirm={() => setAlertModalState({ isOpen: false, message: '' })}
+                title="Action Denied"
+                message={alertModalState.message}
+                confirmText="OK"
+                cancelText=""
+                type="danger"
+            />
         </Layout>
     );
 }

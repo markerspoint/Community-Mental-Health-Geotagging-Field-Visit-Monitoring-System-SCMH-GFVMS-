@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import Layout from '../../components/Layout';
+import { capitalizeWords } from '../../lib/utils';
 
 interface Patient {
     id: number;
@@ -205,13 +206,13 @@ export default function Index({ patients, barangays, filters }: IndexProps) {
                                             {p.patient_id}
                                         </td>
                                         <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-white">
-                                            {p.full_name}
+                                            {capitalizeWords(p.full_name)}
                                         </td>
                                         <td className="py-3.5 px-4 text-xs">
                                             {p.age} yrs / {p.sex}
                                         </td>
                                         <td className="py-3.5 px-4 text-xs">
-                                            <span className="font-semibold">{p.barangay}</span>
+                                            <span className="font-semibold">{capitalizeWords(p.barangay)}</span>
                                         </td>
                                         <td className="py-3.5 px-4 text-xs font-medium text-slate-600 dark:text-slate-300">
                                             {p.case_category}

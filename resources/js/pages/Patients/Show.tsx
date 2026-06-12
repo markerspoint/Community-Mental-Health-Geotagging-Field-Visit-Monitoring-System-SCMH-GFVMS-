@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import Layout from '../../components/Layout';
 import { Map, Marker } from '../../components/ui/map';
+import { capitalizeWords } from '../../lib/utils';
+import { getOfflineMode, queueOfflineVisit } from '../../lib/offlineStore';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
+import { ScheduleModal } from '../../components/ui/ScheduleModal';
 
 interface Visit {
     id: number;
@@ -47,10 +51,61 @@ interface ShowProps {
 }
 
 export default function Show({ patient }: ShowProps) {
-    const handleDelete = () => {
-        if (confirm('Are you sure you want to permanently delete this patient record?')) {
-            router.delete(`/patients/${patient.id}`);
+    const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    const handleScheduleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const isOffline = getOfflineMode();
+        
+        const offlineVisits = JSON.parse(localStorage.getItem('scm_offline_visits') || '[]');
+        const existingOfflineVisit = offlineVisits.find(
+            (v: any) => v.patient_id === patient.id && (v.visit_status === 'Scheduled' || v.visit_status === 'Active')
+        );
+        const existingServerVisit = patient.field_visits.find(
+            (v: any) => v.visit_status === 'Scheduled' || v.visit_status === 'Active'
+        );
+
+        if (isOffline) {
+            if (existingOfflineVisit || existingServerVisit) {
+                router.visit('/visits');
+            } else {
+                setIsScheduleModalOpen(true);
+            }
+        } else {
+            if (existingServerVisit) {
+                router.visit('/visits');
+            } else {
+                setIsScheduleModalOpen(true);
+            }
         }
+    };
+
+    const handleConfirmSchedule = (date: string, staffName: string) => {
+        const isOffline = getOfflineMode();
+        if (isOffline) {
+            queueOfflineVisit({
+                patient_id: patient.id,
+                scheduled_date: date,
+                visit_status: 'Scheduled',
+                staff_name: staffName
+            });
+            router.visit('/visits');
+        } else {
+            router.post('/visits', {
+                patient_id: patient.id,
+                scheduled_date: date,
+                staff_name: staffName
+            });
+        }
+    };
+
+    const handleDelete = () => {
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        router.delete(`/patients/${patient.id}`);
     };
 
     const getRiskColor = (risk: string) => {
@@ -71,7 +126,7 @@ export default function Show({ patient }: ShowProps) {
 
     return (
         <Layout>
-            <Head title={`Profile - ${patient.full_name}`} />
+            <Head title={`Profile - ${capitalizeWords(patient.full_name)}`} />
 
             {/* Back Nav bar */}
             <div className="flex items-center justify-between mb-6">
@@ -108,9 +163,9 @@ export default function Show({ patient }: ShowProps) {
                     {/* Summary card */}
                     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 text-center">
                         <div className="h-20 w-20 rounded-full bg-teal-600 text-white font-bold text-3xl mx-auto flex items-center justify-center shadow-lg shadow-teal-500/20">
-                            {patient.full_name.charAt(0)}
+                            {patient.full_name.charAt(0).toUpperCase()}
                         </div>
-                        <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-white">{patient.full_name}</h3>
+                        <h3 className="text-lg font-bold mt-4 text-slate-800 dark:text-white">{capitalizeWords(patient.full_name)}</h3>
                         <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold">{patient.patient_id}</span>
                         
                         <div className="flex justify-center gap-2 mt-4">
@@ -133,11 +188,11 @@ export default function Show({ patient }: ShowProps) {
                             </div>
                             <div className="flex justify-between text-xs">
                                 <span className="text-slate-400 font-medium">Barangay</span>
-                                <span className="font-bold text-slate-700 dark:text-slate-200">{patient.barangay}</span>
+                                <span className="font-bold text-slate-700 dark:text-slate-200">{capitalizeWords(patient.barangay)}</span>
                             </div>
                             <div className="flex justify-between text-xs">
                                 <span className="text-slate-400 font-medium">Assigned Staff</span>
-                                <span className="font-bold text-slate-700 dark:text-slate-200">{patient.assigned_staff_name || 'Unassigned'}</span>
+                                <span className="font-bold text-slate-700 dark:text-slate-200">{patient.assigned_staff_name ? capitalizeWords(patient.assigned_staff_name) : 'Unassigned'}</span>
                             </div>
                         </div>
                     </div>
@@ -178,7 +233,7 @@ export default function Show({ patient }: ShowProps) {
                         <div>
                             <span className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Emergency Contact</span>
                             <div className="text-sm">
-                                <span className="font-bold text-slate-800 dark:text-white">{patient.emergency_contact?.name}</span>
+                                <span className="font-bold text-slate-800 dark:text-white">{capitalizeWords(patient.emergency_contact?.name)}</span>
                                 <span className="text-slate-400 text-xs ml-1">({patient.emergency_contact?.relation})</span>
                                 <span className="block text-slate-500 font-medium text-xs mt-0.5">Phone: {patient.emergency_contact?.phone}</span>
                             </div>
@@ -207,7 +262,7 @@ export default function Show({ patient }: ShowProps) {
                             <div className="space-y-4 md:col-span-1 text-xs">
                                 <div>
                                     <span className="text-slate-400 font-medium block">Barangay Address</span>
-                                    <span className="font-bold text-slate-800 dark:text-slate-200">{patient.barangay}</span>
+                                    <span className="font-bold text-slate-800 dark:text-slate-200">{capitalizeWords(patient.barangay)}</span>
                                 </div>
                                 <div>
                                     <span className="text-slate-400 font-medium block">Street Address</span>
@@ -257,12 +312,12 @@ export default function Show({ patient }: ShowProps) {
                     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6">
                         <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800/80 pb-3 mb-4">
                             <h4 className="font-bold text-xs uppercase tracking-wider text-teal-600 dark:text-teal-400">Field Visits Log</h4>
-                            <Link
-                                href="/visits"
-                                className="text-xs text-teal-600 dark:text-teal-400 font-bold hover:underline"
+                            <button
+                                onClick={handleScheduleClick}
+                                className="text-xs text-teal-600 dark:text-teal-400 font-bold hover:underline cursor-pointer bg-transparent border-none p-0"
                             >
                                 Schedule Visit
-                            </Link>
+                            </button>
                         </div>
 
                         <div className="space-y-4">
@@ -365,6 +420,24 @@ export default function Show({ patient }: ShowProps) {
                     </div>
                 </div>
             </div>
+            <ScheduleModal
+                isOpen={isScheduleModalOpen}
+                onClose={() => setIsScheduleModalOpen(false)}
+                onConfirm={handleConfirmSchedule}
+                patientName={patient.full_name}
+                assignedStaffName={patient.assigned_staff_name}
+            />
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Patient Record"
+                message={`Are you sure you want to permanently delete the patient record of ${capitalizeWords(patient.full_name)}? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+            />
         </Layout>
     );
 }

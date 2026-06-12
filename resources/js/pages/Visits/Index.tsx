@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Layout from '../../components/Layout';
 import { getOfflineMode, queueOfflineVisit, getOfflinePatients } from '../../lib/offlineStore';
+import { capitalizeWords } from '../../lib/utils';
+import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 
 interface PatientOption {
     id: number | string;
@@ -45,6 +47,10 @@ export default function Index({ visits: serverVisits, patients: serverPatients, 
     const [allVisits, setAllVisits] = useState<Visit[]>([]);
     const [allPatients, setAllPatients] = useState<PatientOption[]>([]);
     const [offlineSuccess, setOfflineSuccess] = useState(false);
+    const [cancelModalState, setCancelModalState] = useState<{ isOpen: boolean; visitId: number | string | null }>({
+        isOpen: false,
+        visitId: null
+    });
 
     // Schedule form hook
     const { data, setData, post, reset, errors, processing } = useForm({
@@ -137,8 +143,15 @@ export default function Index({ visits: serverVisits, patients: serverPatients, 
     };
 
     const handleCancelVisit = (id: number | string) => {
-        if (confirm('Are you sure you want to cancel this scheduled visit?')) {
-            router.delete(`/visits/${id}`);
+        setCancelModalState({
+            isOpen: true,
+            visitId: id
+        });
+    };
+
+    const handleConfirmCancel = () => {
+        if (cancelModalState.visitId !== null) {
+            router.delete(`/visits/${cancelModalState.visitId}`);
         }
     };
 
@@ -237,13 +250,13 @@ export default function Index({ visits: serverVisits, patients: serverPatients, 
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="flex items-start gap-4">
                                             <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-sm shrink-0">
-                                                {visit.patient?.full_name.charAt(0)}
+                                                {visit.patient?.full_name.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
                                                 <h4 className="font-bold text-sm text-slate-800 dark:text-white">
-                                                    {visit.patient?.full_name}
+                                                    {capitalizeWords(visit.patient?.full_name)}
                                                 </h4>
-                                                <span className="text-xs text-slate-400 block mt-0.5">{visit.patient?.barangay} • Assigned Staff: {visit.staff_name}</span>
+                                                <span className="text-xs text-slate-400 block mt-0.5">{capitalizeWords(visit.patient?.barangay)} • Assigned Staff: {capitalizeWords(visit.staff_name)}</span>
                                             </div>
                                         </div>
 
@@ -336,7 +349,7 @@ export default function Index({ visits: serverVisits, patients: serverPatients, 
                                 >
                                     <option value="">-- Choose Patient --</option>
                                     {allPatients.map(p => (
-                                        <option key={p.id} value={p.id}>{p.full_name} ({p.barangay})</option>
+                                        <option key={p.id} value={p.id}>{capitalizeWords(p.full_name)} ({capitalizeWords(p.barangay)})</option>
                                     ))}
                                 </select>
                                 {errors.patient_id && <span className="text-red-500 text-[10px]">{errors.patient_id}</span>}
@@ -388,6 +401,17 @@ export default function Index({ visits: serverVisits, patients: serverPatients, 
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={cancelModalState.isOpen}
+                onClose={() => setCancelModalState({ isOpen: false, visitId: null })}
+                onConfirm={handleConfirmCancel}
+                title="Cancel Scheduled Visit"
+                message="Are you sure you want to cancel this scheduled field visit? This will remove the assignment from the queue."
+                confirmText="Cancel Visit"
+                cancelText="Keep Scheduled"
+                type="danger"
+            />
         </Layout>
     );
 }

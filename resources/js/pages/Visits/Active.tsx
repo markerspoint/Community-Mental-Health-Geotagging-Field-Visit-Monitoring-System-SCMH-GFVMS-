@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import Layout from '../../components/Layout';
 import { getOfflineMode, queueOfflineVisit } from '../../lib/offlineStore';
+import { capitalizeWords } from '../../lib/utils';
 
 interface Patient {
     id: number;
@@ -193,8 +194,8 @@ export default function Active({ visit }: ActiveProps) {
                 {/* Patient / Household info header card */}
                 <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400">Current Monitoring Target</span>
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-white mt-1">{visit.patient.full_name}</h3>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{visit.patient.barangay} • {visit.patient.address}</p>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-white mt-1">{capitalizeWords(visit.patient.full_name)}</h3>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{capitalizeWords(visit.patient.barangay)} • {visit.patient.address}</p>
 
                     {/* Geotag Coordinates Verification block */}
                     {visit.patient.latitude && visit.patient.longitude && (

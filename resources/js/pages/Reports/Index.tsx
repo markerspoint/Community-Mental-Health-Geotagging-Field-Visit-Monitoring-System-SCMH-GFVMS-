@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
 import Layout from '../../components/Layout';
+import { capitalizeWords } from '../../lib/utils';
 
 interface StatsRow {
     barangay?: string;
@@ -134,7 +135,7 @@ export default function Index({ barangay_data, case_data, risk_data, visit_summa
                                                         textAnchor="middle"
                                                         className="text-[9px] font-bold fill-slate-400 dark:fill-slate-500"
                                                     >
-                                                        {d.barangay?.substring(0, 7) || 'Brgy'}
+                                                        {capitalizeWords(d.barangay)?.substring(0, 7) || 'Brgy'}
                                                     </text>
                                                 </g>
                                             );
