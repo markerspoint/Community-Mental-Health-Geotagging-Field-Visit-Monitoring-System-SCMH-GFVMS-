@@ -8,7 +8,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
     const { url } = usePage();
-    const [isDarkMode, setIsDarkMode] = useState(false);
+
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
@@ -17,16 +17,9 @@ export default function Layout({ children }: LayoutProps) {
 
     // Initialize Theme, Offline status and Event Listeners
     useEffect(() => {
-        // Theme
-        const theme = localStorage.getItem('theme');
-        const darkTheme = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        if (darkTheme) {
-            document.documentElement.classList.add('dark');
-            setIsDarkMode(true);
-        } else {
-            document.documentElement.classList.remove('dark');
-            setIsDarkMode(false);
-        }
+        // Force light mode
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
 
         // Offline Mode
         setIsOffline(getOfflineMode());
@@ -53,19 +46,7 @@ export default function Layout({ children }: LayoutProps) {
         };
     }, []);
 
-    const toggleTheme = () => {
-        if (isDarkMode) {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-            setIsDarkMode(false);
-        } else {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-            setIsDarkMode(true);
-        }
-        // Dispatch event so other components (like mapcn) know theme has changed
-        window.dispatchEvent(new Event('theme-changed'));
-    };
+
 
     const toggleOfflineSimulation = () => {
         const nextMode = !isOffline;
@@ -176,21 +157,7 @@ export default function Layout({ children }: LayoutProps) {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-400 font-medium">Dark Theme</span>
-                        <button
-                            onClick={toggleTheme}
-                            className="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-200 dark:bg-slate-700 transition-colors"
-                        >
-                            <span
-                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                    isDarkMode ? 'translate-x-6' : 'translate-x-1'
-                                }`}
-                            />
-                        </button>
-                    </div>
-                </div>
+
             </aside>
 
             {/* Mobile Drawer Navigation */}
@@ -225,21 +192,7 @@ export default function Layout({ children }: LayoutProps) {
                                 </Link>
                             ))}
                         </nav>
-                        <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-slate-400 font-medium">Dark Theme</span>
-                                <button
-                                    onClick={toggleTheme}
-                                    className="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-200 dark:bg-slate-700 transition-colors"
-                                >
-                                    <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                            isDarkMode ? 'translate-x-6' : 'translate-x-1'
-                                        }`}
-                                    />
-                                </button>
-                            </div>
-                        </div>
+
                     </aside>
                 </div>
             )}

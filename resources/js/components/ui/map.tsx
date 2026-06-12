@@ -22,11 +22,7 @@ export function Map({ center = [121.0587, 13.9392], zoom = 12, children, classNa
     useEffect(() => {
         if (!containerRef.current) return;
 
-        // Detect if dark mode is active on html tag
-        const isDarkMode = document.documentElement.classList.contains('dark');
-        const tileUrl = isDarkMode 
-            ? 'https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png'
-            : 'https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png';
+        const tileUrl = 'https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png';
 
         const mapStyle: any = {
             version: 8,
