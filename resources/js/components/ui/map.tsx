@@ -14,7 +14,7 @@ interface MapProps extends React.HTMLAttributes<HTMLDivElement> {
     children?: React.ReactNode;
 }
 
-export function Map({ center = [121.0587, 13.9392], zoom = 12, children, className, ...props }: MapProps) {
+export function Map({ center = [122.4025, 9.7512], zoom = 12, children, className, ...props }: MapProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [map, setMap] = useState<maplibregl.Map | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);

@@ -46,7 +46,7 @@ export default function Dashboard({ stats, patients: serverPatients, filters: fi
     const [allPatients, setAllPatients] = useState<PatientData[]>([]);
     
     // Map settings
-    const [mapCenter, setMapCenter] = useState<[number, number]>([121.0587, 13.9392]);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([122.4025, 9.7512]);
     const [mapZoom, setMapZoom] = useState(12);
 
     // Combine server-side patients and offline local patients

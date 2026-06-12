@@ -37,7 +37,7 @@ interface FormProps {
 
 export default function Form({ isEdit, patient }: FormProps) {
     const isOfflineMode = getOfflineMode();
-    const [mapCenter, setMapCenter] = useState<[number, number]>([121.0587, 13.9392]);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([122.4025, 9.7512]);
     const [mapZoom, setMapZoom] = useState(12);
     const [gpsDetecting, setGpsDetecting] = useState(false);
     const [gpsError, setGpsError] = useState<string | null>(null);

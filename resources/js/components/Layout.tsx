@@ -79,7 +79,10 @@ export default function Layout({ children }: LayoutProps) {
         setTimeout(() => setSyncMessage(null), 5000);
     };
 
-    const navItems = [
+    const { auth } = usePage().props as any;
+    const userRole = auth?.user?.role || 'staff';
+
+    const allNavItems = [
         {
             name: 'Dashboard Map',
             path: '/',
@@ -115,8 +118,24 @@ export default function Layout({ children }: LayoutProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
                 </svg>
             )
+        },
+        {
+            name: 'User Management',
+            path: '/users',
+            icon: (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+            )
         }
     ];
+
+    const navItems = allNavItems.filter(item => {
+        if (userRole === 'admin') {
+            return item.path === '/users';
+        }
+        return item.path !== '/users';
+    });
 
     const isActive = (path: string) => {
         if (path === '/') return url === '/';
@@ -157,7 +176,20 @@ export default function Layout({ children }: LayoutProps) {
                     ))}
                 </nav>
 
-
+                <div className="p-4 border-t border-slate-200">
+                    <Link
+                        href="/logout"
+                        method="post"
+                        as="button"
+                        type="button"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                    >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Sign Out
+                    </Link>
+                </div>
             </aside>
 
             {/* Mobile Drawer Navigation */}
@@ -193,6 +225,20 @@ export default function Layout({ children }: LayoutProps) {
                             ))}
                         </nav>
 
+                        <div className="p-4 border-t border-slate-200">
+                            <Link
+                                href="/logout"
+                                method="post"
+                                as="button"
+                                type="button"
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                            >
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Sign Out
+                            </Link>
+                        </div>
                     </aside>
                 </div>
             )}
@@ -213,47 +259,49 @@ export default function Layout({ children }: LayoutProps) {
                     </div>
 
                     {/* Sync Actions & Connection Stats */}
-                    <div className="flex items-center gap-3">
-                        {/* Offline simulation switch */}
-                        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
-                                {isOffline ? 'Offline Sim' : 'Online'}
-                            </span>
-                            <button
-                                onClick={toggleOfflineSimulation}
-                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                                    isOffline ? 'bg-amber-500' : 'bg-emerald-500'
-                                }`}
-                            >
-                                <span
-                                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                                        isOffline ? 'translate-x-4.5' : 'translate-x-1'
+                    {userRole !== 'admin' && (
+                        <div className="flex items-center gap-3">
+                            {/* Offline simulation switch */}
+                            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
+                                    {isOffline ? 'Offline Sim' : 'Online'}
+                                </span>
+                                <button
+                                    onClick={toggleOfflineSimulation}
+                                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                        isOffline ? 'bg-amber-500' : 'bg-emerald-500'
                                     }`}
-                                />
-                            </button>
-                        </div>
+                                >
+                                    <span
+                                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                            isOffline ? 'translate-x-4.5' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
 
-                        {/* Sync button */}
-                        {pendingCount > 0 && (
-                            <button
-                                onClick={handleSync}
-                                disabled={isSyncing}
-                                className="flex items-center gap-2 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-xs font-bold shadow-md shadow-amber-500/20 transition-all duration-200 hover:scale-105 disabled:opacity-50"
-                            >
-                                {isSyncing ? (
-                                    <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                    </svg>
-                                ) : (
-                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 6.89M9 11l3-3 3 3m-3-3v12" />
-                                    </svg>
-                                )}
-                                <span>Sync ({pendingCount})</span>
-                            </button>
-                        )}
-                    </div>
+                            {/* Sync button */}
+                            {pendingCount > 0 && (
+                                <button
+                                    onClick={handleSync}
+                                    disabled={isSyncing}
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-xs font-bold shadow-md shadow-amber-500/20 transition-all duration-200 hover:scale-105 disabled:opacity-50"
+                                >
+                                    {isSyncing ? (
+                                        <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 6.89M9 11l3-3 3 3m-3-3v12" />
+                                        </svg>
+                                    )}
+                                    <span>Sync ({pendingCount})</span>
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </header>
 
                 {/* Sync notification message banner */}
@@ -266,7 +314,7 @@ export default function Layout({ children }: LayoutProps) {
                 )}
 
                 {/* Offline Simulation Alert Banner */}
-                {isOffline && (
+                {isOffline && userRole !== 'admin' && (
                     <div className="bg-amber-500/10 border-b border-amber-500/30 px-6 py-2 flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 z-10 font-medium">
                         <div className="flex items-center gap-2">
                             <span className="relative flex h-2 w-2">
